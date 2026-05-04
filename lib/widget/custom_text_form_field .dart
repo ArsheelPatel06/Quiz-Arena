@@ -37,10 +37,7 @@ class CustomTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      style: Theme
-          .of(context)
-          .textTheme
-          .headlineMedium,
+      style: AppTextStyle.normal16Black,
       maxLines: maxLines ?? 1,
       controller: controller,
       validator: validator,
