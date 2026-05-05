@@ -15,7 +15,19 @@ class AppTextStyle {
     fontSize: 32,
     fontWeight: FontWeight.w600,
   );
+  static final TextStyle bold57White = GoogleFonts.inter(
+    color: AppColors.whiteColor,
+    fontSize: 57,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.25,
+  );
 
+  static final TextStyle regular16FixedDim = GoogleFonts.inter(
+    color: AppColors.primaryFixedDimColor,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.5,
+  );
   static final TextStyle medium28Black = GoogleFonts.inter(
     color: AppColors.blackColor,
     fontSize: 28,
