@@ -44,4 +44,8 @@ class AppColors {
   static const Color secondaryDarkColor = Color(0xff594983);
   static const Color redLightColor = Color(0xffFFDAD6);
   static const Color errorContainer = Color(0xffffdad6);
+  static const Color primaryFixedDimColor = Color(0xffCFBCFF);
+  static const Color secondaryGradientColor = Color(0x33D0BCFF);
+  static const Color inversePrimaryGradientColor = Color(0x1ACFBCFF);
+  static const Color trackColor = Color(0x33F2ECF4);
 }

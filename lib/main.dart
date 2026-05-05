@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app_flutter/splash%20screen/splash_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/auth/login_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/auth/register_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/nav_bar_screen.dart';
@@ -21,8 +22,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.loginScreen,
+      initialRoute:
+      // AppRoutes.loginScreen
+      '/'
+      ,
+
       routes: {
+        '/' : (context) => QuizMasterSplash(),
         AppRoutes.loginScreen: (context) => LoginScreen(),
         AppRoutes.registerScreen: (context) => RegisterScreen(),
         AppRoutes.mainWrapperScreen: (context) => mainWrapperScreen(),

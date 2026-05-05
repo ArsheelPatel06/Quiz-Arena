@@ -1,0 +1,13 @@
+flutter_native_splash:
+  # This makes the native OS screen match your AppColors.primaryColor
+  color: "#4F378A"
+
+  # Optional: You can also point to a static image of your logo here if you have one
+  image: assets/splash.png
+  # Ensures it looks good on both light and dark mode phones
+  color_dark: "#4F378A"
+
+  android_12:
+    image: assets/splash.png
+    color: "#4F378A"
+    color_dark: "#4F378A"
