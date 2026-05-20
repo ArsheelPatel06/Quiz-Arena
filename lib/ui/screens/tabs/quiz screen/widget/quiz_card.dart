@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../../../utlis/app_colors.dart';
 import '../../../../../utlis/app_text.dart';
 
@@ -10,6 +9,7 @@ class QuizCard extends StatelessWidget {
   final String duration;
   final String description;
   final Color difficultyColor;
+  final VoidCallback? onStartQuiz;   // NEW: callback for when Start Quiz is tapped
 
   const QuizCard({
     super.key,
@@ -19,6 +19,7 @@ class QuizCard extends StatelessWidget {
     required this.duration,
     required this.description,
     required this.difficultyColor,
+    this.onStartQuiz,               // NEW: optional so old usages don't break
   });
 
   @override
@@ -99,7 +100,8 @@ class QuizCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
-              onPressed: () {},
+              // CHANGED: was () {} — now calls the callback from the screen
+              onPressed: onStartQuiz,
               label: const Icon(Icons.arrow_forward, size: 18),
               icon: Text('Start Quiz', style: AppTextStyle.medium14Primary),
               style: TextButton.styleFrom(padding: EdgeInsets.zero),

@@ -1,9 +1,14 @@
+# =========================================================
 # Miscellaneous
+# =========================================================
+
 *.class
 *.log
 *.pyc
 *.swp
 .DS_Store
+Thumbs.db
+
 .atom/
 .build/
 .buildlog/
@@ -12,34 +17,130 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# =========================================================
+# IntelliJ / Android Studio
+# =========================================================
+
 *.iml
 *.ipr
 *.iws
+
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# =========================================================
+# VS Code
+# =========================================================
 
-# Flutter/Dart/Pub related
+.vscode/
+
+# =========================================================
+# Flutter / Dart / Pub
+# =========================================================
+
 **/doc/api/
 **/ios/Flutter/.last_build_id
+
 .dart_tool/
+
+.flutter-plugins
 .flutter-plugins-dependencies
+
+.packages
+
 .pub-cache/
 .pub/
-/build/
-/coverage/
 
-# Symbolication related
+build/
+coverage/
+
+# Generated plugin registrant
+generated_plugin_registrant.dart
+
+# =========================================================
+# Flutter Symbolication / Obfuscation
+# =========================================================
+
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# =========================================================
+# Android
+# =========================================================
+
+android/.gradle/
+
+android/app/debug
+android/app/profile
+android/app/release
+
+android/local.properties
+
+# Firebase Android Config
+android/app/google-services.json
+
+# Signing keys
+*.jks
+*.keystore
+key.properties
+
+# =========================================================
+# iOS
+# =========================================================
+
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/
+
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/flutter_export_environment.sh
+
+# Firebase iOS Config
+ios/Runner/GoogleService-Info.plist
+
+# =========================================================
+# macOS
+# =========================================================
+
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+
+# =========================================================
+# Linux
+# =========================================================
+
+linux/flutter/ephemeral/
+
+# =========================================================
+# Windows
+# =========================================================
+
+windows/flutter/ephemeral/
+
+# =========================================================
+# Web
+# =========================================================
+
+web/firebase-messaging-sw.js
+
+# =========================================================
+# Environment / Secrets
+# =========================================================
+
+.env
+.env.*
+*.env
+
+# Firebase Admin SDK Keys
+serviceAccountKey.json
+firebase-adminsdk.json
+
+# =========================================================
+# Optional
+# =========================================================
+
+# Uncomment this if you want to hide FlutterFire config
+# lib/firebase_options.dart

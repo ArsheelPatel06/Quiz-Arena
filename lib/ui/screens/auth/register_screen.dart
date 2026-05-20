@@ -1,9 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter/utlis/app_assets%20.dart';
 
+import '../../../core/services/auth_service.dart';
+import '../../../firebase_utils.dart';
+import '../../../models/user_model.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../utlis/app_colors.dart';
+import '../../../utlis/app_routes .dart';
 import '../../../utlis/app_text.dart';
+import '../../../utlis/dialog_utlis.dart';
 import '../../../widget/custom_elevated_button .dart';
 import '../../../widget/custom_text_form_field%20.dart'; // تأكد من المسار الصحيح
 
@@ -15,6 +23,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final AuthService authService = AuthService();
   final TextEditingController nameController = TextEditingController(
     text: 'ahmed',
   );
@@ -189,6 +198,86 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Logic remains untouched as per your request
   void createAccount() async {
-    // ... logic ...
-  }
-}
+    if (formKey.currentState!.validate()) {
+      FocusScope.of(context).unfocus();
+
+      // ✅ BUG FIX #2: Show loading dialog (was missing before)
+      DialogUtlis.loadingDialog(context);
+
+      try {
+        // Step 1: Create user in Firebase Auth
+        final credential = await authService.register(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+
+        // Step 2: Build user model with the Firebase uid
+        MyUsers myUser = MyUsers(
+          id: credential.user?.uid ?? '',
+          name: nameController.text.trim(),
+          email: emailController.text.trim(),
+        );
+
+        // Step 3: Save user data to Firestore
+        await FireBaseUtils.addUserToFireStore(myUser);
+
+        // ✅ BUG FIX #4: Check mounted BEFORE using context
+        if (!mounted) return;
+
+        // Step 4: Save user in Provider so the rest of the app can access it
+        Provider.of<MyUsersProvider>(context, listen: false).updateUsers(myUser);
+
+        // ✅ BUG FIX #2: Hide loading dialog
+        DialogUtlis.hideDialog(context);
+
+        // ✅ BUG FIX #1: Navigate to main screen after register
+        DialogUtlis.showDialogMessage(
+          context: context,
+          title: 'Success 🎉',
+          middleText: 'Account created successfully!',
+          buttonText: 'Let\'s Go',
+          onButtonPressed: () {
+            // Go to main screen and remove all previous routes
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.mainWrapperScreen,
+                  (_) => false,
+            );
+          },
+        );
+
+      } on FirebaseAuthException catch (error) {
+        // ✅ Always hide loading on error
+        if (!mounted) return;
+        DialogUtlis.hideDialog(context);
+
+        String message = 'Something went wrong';
+
+        if (error.code == 'weak-password') {
+          message = 'The password provided is too weak';
+        }
+        if (error.code == 'email-already-in-use') {
+          message = 'An account with this email already exists';
+        }
+
+        DialogUtlis.showDialogMessage(
+          context: context,
+          title: 'Error',
+          middleText: message,
+          buttonText: 'OK',
+        );
+
+      } catch (error) {
+        print('🔴 Firebase Error Code: ${error.toString()}');
+        // Catch any unexpected errors (e.g. Firestore network issues)
+        if (!mounted) return;
+        DialogUtlis.hideDialog(context);
+
+        DialogUtlis.showDialogMessage(
+          context: context,
+          title: 'Error',
+          middleText: error.toString(),
+          buttonText: 'OK',
+        );
+      }
+    }
+  }}

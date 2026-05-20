@@ -1,20 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';                              // NEW
 import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/widget/action_button.dart';
 import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/widget/stat_card.dart';
-
+import '../../../../providers/quiz_provider.dart';                   // NEW
+import '../../../../providers/auth_provider.dart';                   // NEW
 import '../../../../utlis/app_colors.dart';
 import '../../../../utlis/app_text.dart';
+import '../../../../utlis/app_routes .dart';                         // NEW
 
-
-
-
-class QuizResultScreen extends StatelessWidget {
+// CHANGED: StatelessWidget → StatefulWidget
+// Reason: we need initState() to save the result to Firestore when screen opens
+class QuizResultScreen extends StatefulWidget {
   const QuizResultScreen({super.key});
+
+  @override
+  State<QuizResultScreen> createState() => _QuizResultScreenState();
+}
+
+class _QuizResultScreenState extends State<QuizResultScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Save the result to Firestore once when this screen opens
+    Future.microtask(() => _saveResult());
+  }
+
+  void _saveResult() {
+    var quizProvider = Provider.of<QuizProvider>(context, listen: false);
+    var authProvider = Provider.of<MyUsersProvider>(context, listen: false);
+
+    // Only save if a user is logged in
+    if (authProvider.currentUser != null) {
+      quizProvider.saveResult(authProvider.currentUser!.id);
+    }
+  }
+
+  // Returns a message based on the percentage the user scored
+  String _getResultMessage(double percentage) {
+    if (percentage >= 80) return 'Excellent Work!';
+    if (percentage >= 50) return 'Good Job!';
+    return 'Keep Practicing!';
+  }
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.sizeOf(context).height;
     var width = MediaQuery.sizeOf(context).width;
+
+    // listen: true → UI reads real data from provider
+    var quizProvider = Provider.of<QuizProvider>(context);
+
+    // Calculate values once so we can use them below
+    final int score = quizProvider.calculateScore();
+    final int total = quizProvider.questions.length;
+    final int wrong = total - score;
+    final double percentage = quizProvider.calculatePercentage();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -77,14 +118,16 @@ class QuizResultScreen extends StatelessWidget {
                               ),
                             ],
                           ),
+                          // CHANGED: was hardcoded '8/10' — now uses real score
                           child: Text(
-                            '8/10',
+                            '$score/$total',
                             style: AppTextStyle.regular57PrimaryDark,
                           ),
                         ),
                         SizedBox(height: height * 0.03),
+                        // CHANGED: was hardcoded 'Excellent Work!' — now based on percentage
                         Text(
-                          'Excellent Work!',
+                          _getResultMessage(percentage),
                           style: AppTextStyle.bold32Primary,
                           textAlign: TextAlign.center,
                         ),
@@ -104,7 +147,8 @@ class QuizResultScreen extends StatelessWidget {
                 children: [
                   StatCard(
                     title: 'Correct',
-                    value: '8',
+                    // CHANGED: was hardcoded '8' — now uses real score
+                    value: '$score',
                     icon: Icons.check_circle,
                     iconColor: AppColors.primaryColor,
                     iconBgColor: AppColors.primaryColor,
@@ -112,7 +156,8 @@ class QuizResultScreen extends StatelessWidget {
                   SizedBox(width: width * 0.03),
                   StatCard(
                     title: 'Wrong',
-                    value: '2',
+                    // CHANGED: was hardcoded '2' — now calculated (total - score)
+                    value: '$wrong',
                     icon: Icons.cancel,
                     iconColor: AppColors.redColor,
                     iconBgColor: AppColors.redLightColor,
@@ -120,20 +165,27 @@ class QuizResultScreen extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+              // Review Answers — no logic yet, kept as-is
               ActionButton(
                 text: 'Review Answers',
                 icon: Icons.fact_check_outlined,
                 backgroundColor: AppColors.primaryColor,
                 textStyle: AppTextStyle.medium14White,
                 iconColor: AppColors.whiteColor,
+                onTap: () {},                                        // NEW param
               ),
               SizedBox(height: height * 0.015),
+              // CHANGED: Retry resets quiz and goes back to quiz screen
               ActionButton(
                 text: 'Retry Quiz',
                 icon: Icons.refresh,
                 backgroundColor: AppColors.secondaryLightColor,
                 textStyle: AppTextStyle.medium14SecondaryDark,
                 iconColor: AppColors.secondaryDarkColor,
+                onTap: () {                                          // NEW param
+                  Provider.of<QuizProvider>(context, listen: false).resetQuiz();
+                  Navigator.of(context).pushNamed(AppRoutes.quizFocusScreen);
+                },
               ),
               SizedBox(height: height * 0.015),
               ActionButton(
@@ -142,6 +194,14 @@ class QuizResultScreen extends StatelessWidget {
                 backgroundColor: AppColors.transparentColor,
                 textStyle: AppTextStyle.medium14Primary,
                 iconColor: AppColors.primaryColor,
+                onTap: () {
+                  // clearQuestions: true → clears old questions so home screen is clean
+                  Provider.of<QuizProvider>(context, listen: false).resetQuiz(clearQuestions: true);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.mainWrapperScreen,
+                        (route) => false,
+                  );
+                },
               ),
             ],
           ),
@@ -150,5 +210,3 @@ class QuizResultScreen extends StatelessWidget {
     );
   }
 }
-
-

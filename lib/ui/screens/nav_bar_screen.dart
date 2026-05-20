@@ -28,7 +28,7 @@ class _HomeScreenTabState extends State<mainWrapperScreen> {
 
   List<Widget> selectedWidget = [
     HomeScreen(),
-    QuizzesHomeScreen(),
+    QuizzesHomeScreen(categoryId: ''),
     ProfileScreen(),
   ];
 

@@ -6,6 +6,7 @@ class ActionButton extends StatelessWidget {
   final Color backgroundColor;
   final TextStyle textStyle;
   final Color iconColor;
+  final VoidCallback? onTap;          // NEW: callback from outside
 
   const ActionButton({
     super.key,
@@ -14,6 +15,7 @@ class ActionButton extends StatelessWidget {
     required this.backgroundColor,
     required this.textStyle,
     required this.iconColor,
+    this.onTap,                       // NEW: optional so nothing breaks
   });
 
   @override
@@ -22,7 +24,7 @@ class ActionButton extends StatelessWidget {
     var height = MediaQuery.sizeOf(context).height;
 
     return InkWell(
-      onTap: () {},
+      onTap: onTap,                   // CHANGED: was () {} — now uses the callback
       borderRadius: BorderRadius.circular(width * 0.1),
       child: Container(
         width: double.infinity,
@@ -34,16 +36,9 @@ class ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: iconColor,
-              size: width * 0.05,
-            ),
+            Icon(icon, color: iconColor, size: width * 0.05),
             SizedBox(width: width * 0.02),
-            Text(
-              text,
-              style: textStyle,
-            ),
+            Text(text, style: textStyle),
           ],
         ),
       ),

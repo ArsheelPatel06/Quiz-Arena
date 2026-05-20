@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quiz_app_flutter/providers/auth_provider.dart';
+import 'package:quiz_app_flutter/providers/quiz_provider.dart'; // ← NEW: import QuizProvider
 import 'package:quiz_app_flutter/splash%20screen/splash_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/auth/login_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/auth/register_screen.dart';
@@ -9,9 +12,33 @@ import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/quiz_focus_screen
 import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/quiz_result_screen.dart';
 import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/quizzes_screen.dart';
 import 'package:quiz_app_flutter/utlis/app_routes%20.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  // Makes sure Flutter is ready before we call any native code (Firebase)
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Connect Flutter to your Firebase project using the generated options file
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // MultiProvider makes BOTH providers available to every screen in the app.
+  // Think of it as a box sitting above the whole widget tree.
+  // Any screen can reach in and grab MyUsersProvider OR QuizProvider.
+  runApp(MultiProvider(
+    providers: [
+      // Handles login / register / logout (already existed)
+      ChangeNotifierProvider(create: (context) => MyUsersProvider()),
+
+      // ── NEW ──────────────────────────────────────────────
+      // Handles categories, quizzes, questions, quiz logic, and results.
+      // Created once here so it lives for the entire app session.
+      ChangeNotifierProvider(create: (context) => QuizProvider()),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -33,12 +60,15 @@ class MyApp extends StatelessWidget {
         AppRoutes.registerScreen: (context) => RegisterScreen(),
         AppRoutes.mainWrapperScreen: (context) => mainWrapperScreen(),
         AppRoutes.homeScreenRoute: (context) => HomeScreen(),
-        AppRoutes.quizzesScreen : (context) =>  QuizzesHomeScreen(),
+        AppRoutes.quizzesScreen: (context) {
+          // Read the categoryId that was passed when navigating to this screen
+          final categoryId = ModalRoute.of(context)!.settings.arguments as String;
+          return QuizzesHomeScreen(categoryId: categoryId);
+        },
         AppRoutes.profileTabScreen : (context) => ProfileScreen(),
         AppRoutes.quizFocusScreen : (context) => QuizFocusScreen(),
-         AppRoutes.quizResultScreen : (context) => QuizResultScreen(),
+        AppRoutes.quizResultScreen : (context) => QuizResultScreen(),
       },
     );
   }
 }
-
