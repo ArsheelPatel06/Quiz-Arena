@@ -22,7 +22,7 @@ class _QuizFocusScreenState extends State<QuizFocusScreen> {
 
   static const int _totalSeconds = 15;
 
-  late int _secondsLeft;
+  late int remainingTime;
 
   Timer? _timer;
 
@@ -33,7 +33,7 @@ class _QuizFocusScreenState extends State<QuizFocusScreen> {
   @override
   void initState() {
     super.initState();
-    _secondsLeft = _totalSeconds;
+    remainingTime = _totalSeconds;
     _startTimer();
   }
 
@@ -47,33 +47,26 @@ class _QuizFocusScreenState extends State<QuizFocusScreen> {
     // Reset the counter and repaint BEFORE the first tick fires,
     // so there is no visual flash of the previous question's remaining time
     if (mounted) {
-      setState(() => _secondsLeft = _totalSeconds);
+      setState(() => remainingTime = _totalSeconds);
     } else {
-      _secondsLeft = _totalSeconds;
+      remainingTime = _totalSeconds;
     }
 
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-          (timer) {
-
+      (timer) {
         if (!mounted) {
           timer.cancel();
           return;
         }
 
-        // Use <= instead of == to avoid skipping the boundary
-        // if the value ever gets decremented more than once
-        if (_secondsLeft <= 0) {
-
-          // Cancel the timer BEFORE calling _onNextPressed so a
-          // late-firing tick cannot sneak past the _isMoving guard
+        // ASSIGNMENT DEMO - Timer
+        if (remainingTime > 0) {
+          setState(() => remainingTime--);
+        } else {
           timer.cancel();
-
-          _onNextPressed(timedOut: true);
-          return;
+          _onNextPressed(timedOut: true); // acts as nextQuestion()
         }
-
-        setState(() => _secondsLeft--);
       },
     );
   }
@@ -179,7 +172,7 @@ class _QuizFocusScreenState extends State<QuizFocusScreen> {
         (currentIndex + 1) / totalQuestions;
 
     // Timer badge turns red when 5 seconds or fewer remain
-    final bool isAlmostUp = _secondsLeft <= 5;
+    final bool isAlmostUp = remainingTime <= 5;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -245,7 +238,7 @@ class _QuizFocusScreenState extends State<QuizFocusScreen> {
                         SizedBox(width: width * 0.015),
 
                         Text(
-                          _formatTime(_secondsLeft),
+                          _formatTime(remainingTime),
                           style: AppTextStyle.medium14Black.copyWith(
                             color: isAlmostUp ? Colors.red : null,
                           ),

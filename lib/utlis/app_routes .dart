@@ -9,6 +9,5 @@ class AppRoutes {
   static const String progressScreen = 'progress_screen';
   static const String quizFocusScreen = 'Quiz_FocusScreen';
   static const String quizResultScreen = 'Quiz_ResultScreen';
-
-
+  static const String leaderboardScreen = 'leaderboard_screen';
 }

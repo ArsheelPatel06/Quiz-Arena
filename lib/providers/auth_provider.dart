@@ -9,6 +9,9 @@ class MyUsersProvider extends ChangeNotifier {
   // True while a login/register request is in progress
   bool isLoading = false;
 
+  // Is this an Admin user?
+  bool isAdmin = false;
+
   // Holds an error message to show in the UI (null = no error)
   String? errorMessage;
 
@@ -23,6 +26,13 @@ class MyUsersProvider extends ChangeNotifier {
   // Call this when the user logs out
   void clearUser() {
     currentUser = null;
+    isAdmin = false;
+    notifyListeners();
+  }
+
+  // Set admin state
+  void setAdmin(bool value) {
+    isAdmin = value;
     notifyListeners();
   }
 

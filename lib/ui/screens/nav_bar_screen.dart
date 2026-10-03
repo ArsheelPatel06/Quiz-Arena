@@ -7,6 +7,12 @@ import 'package:quiz_app_flutter/ui/screens/tabs/quiz%20screen/quizzes_screen.da
 
 import '../../utlis/app_colors.dart';
 import '../../utlis/app_text.dart';
+import '../../utlis/app_routes .dart';
+import 'package:provider/provider.dart';
+import '../../../../providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/services/auth_service.dart';
+import '../../../../utlis/dialog_utlis.dart';
 
 class mainWrapperScreen extends StatefulWidget {
   const mainWrapperScreen({super.key});
@@ -45,8 +51,13 @@ class _HomeScreenTabState extends State<mainWrapperScreen> {
      appBar: AppBar(
         backgroundColor: AppColors.whiteColor,
         elevation: 0,
-        leading: Icon(Icons.menu, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
-        title: Text('QuizMaster', style: AppTextStyle.title20Primary),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        title: Text('QuizArena', style: AppTextStyle.title20Primary),
         centerTitle: true,
         actions: [
           Padding(
@@ -58,6 +69,88 @@ class _HomeScreenTabState extends State<mainWrapperScreen> {
           ),
         ],
         shape: Border(bottom: BorderSide(color: AppColors.outlineVariantColor, width: 1)),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: AppColors.primaryColor),
+              child: Consumer<MyUsersProvider>(
+                builder: (context, authProvider, child) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const CircleAvatar(
+                        radius: 30,
+                        backgroundImage: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBgAbgjBZGWw1_zgZqEZHsTGewVUsdD3vrKTtVGwrpIl2ynMwHRM08E58Nzb92lQeceVHmt7XeFTSp7hbpnAbJaE9B-IKLBlC5ZW45fkEShGIHUYefUcb_1UD8WCIfqMqM86nQfFOyaBQQkILUz5yJwrhwVYBH9YiXRoDYdRG-_lP88NnYy6Cn851GoWN5br4p_ay5d2dWB7FZyTe625sdTfPm1vHQk1i_HyT0R9eKi7IN2ak397ODtHDP9gsB5cH60o1lPKmFwTGah'),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(authProvider.currentUser?.name ?? 'Arsheel Patel', style: AppTextStyle.title20Primary.copyWith(color: Colors.white)),
+                    ],
+                  );
+                }
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context); 
+                // We're already in the main wrapper, just need to set index if possible, but simplest is to do nothing or close drawer.
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                // Currently handled by bottom nav.
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.emoji_events),
+              title: const Text('Leaderboard (Tech Trivia)'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.pushNamed(context, AppRoutes.leaderboardScreen, arguments: 'tech-trivia');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                // Functional settings dialog
+                DialogUtlis.showDialogMessage(
+                  context: context, 
+                  title: 'Settings', 
+                  middleText: 'Settings page coming soon!', 
+                  buttonText: 'OK'
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Log Out'),
+              onTap: () async {
+                final authService = AuthService();
+                await FirebaseAuth.instance.signOut();
+                try {
+                  await authService.logout();
+                  Provider.of<MyUsersProvider>(context, listen: false).clearUser();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.loginScreen,
+                        (route) => false,
+                  );
+                } catch (e) {
+                  print(e);
+                }
+              },
+            ),
+          ],
+        ),
       ),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       /********************/

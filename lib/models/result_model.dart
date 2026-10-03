@@ -14,20 +14,24 @@
 class ResultModel {
   final String id;             // Firestore document ID (empty when creating)
   final String userId;         // Firebase Auth UID of the user
+  final String userName;       // User's name for leaderboard
   final String quizId;         // Which quiz was taken
   final int score;             // How many answers were correct
   final int totalQuestions;    // Total number of questions in the quiz
   final double percentage;     // score / totalQuestions * 100
   final DateTime date;         // When the quiz was completed
+  final List<dynamic>? detailedResponses; // Added for Admin Analytics
 
   ResultModel({
     required this.id,
     required this.userId,
+    this.userName = 'Anonymous',
     required this.quizId,
     required this.score,
     required this.totalQuestions,
     required this.percentage,
     required this.date,
+    this.detailedResponses,
   });
 
   // ── fromMap ──────────────────────────────────────────────
@@ -36,12 +40,14 @@ class ResultModel {
     return ResultModel(
       id: docId,
       userId: map['userId'] ?? '',
+      userName: map['userName'] ?? 'Anonymous',
       quizId: map['quizId'] ?? '',
       score: map['score'] ?? 0,
       totalQuestions: map['totalQuestions'] ?? 0,
       percentage: (map['percentage'] ?? 0.0).toDouble(),
       // Firestore stores dates as Timestamp; .toDate() converts to DateTime
       date: (map['date'] as dynamic)?.toDate() ?? DateTime.now(),
+      detailedResponses: map['detailedResponses'] as List<dynamic>?,
     );
   }
 
@@ -50,11 +56,13 @@ class ResultModel {
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
+      'userName': userName,
       'quizId': quizId,
       'score': score,
       'totalQuestions': totalQuestions,
       'percentage': percentage,
       'date': date,
+      if (detailedResponses != null) 'detailedResponses': detailedResponses,
     };
   }
 }

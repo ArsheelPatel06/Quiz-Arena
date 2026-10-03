@@ -251,6 +251,7 @@
 //     notifyListeners();
 //   }
 // }
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../core/services/firestore_service.dart';
@@ -344,12 +345,14 @@ class QuizProvider extends ChangeNotifier {
 
   // ── nextQuestion ──────────────────────────────────────────
   bool nextQuestion() {
+    // ASSIGNMENT DEMO - Question progression
     if (currentQuestionIndex < questions.length - 1) {
       currentQuestionIndex++;
       notifyListeners();
-      return true;
+      return true; // corresponds to startTimer() in UI
+    } else {
+      return false; // corresponds to finishQuiz() in UI
     }
-    return false;
   }
 
   // ── resetQuiz ─────────────────────────────────────────────
@@ -375,7 +378,9 @@ class QuizProvider extends ChangeNotifier {
     int score = 0;
     for (int i = 0; i < questions.length; i++) {
       if (selectedAnswers.containsKey(i)) {
-        if (selectedAnswers[i] == questions[i].correctIndex) {
+        // ASSIGNMENT DEMO - Correct answer
+        int selectedIndex = selectedAnswers[i]!;
+        if (selectedIndex == questions[i].correctIndex) {
           score++;
         }
       }
@@ -389,14 +394,30 @@ class QuizProvider extends ChangeNotifier {
   }
 
   Future<void> saveResult(String userId) async {
+    final auth = FirebaseAuth.instance;
+    final userName = auth.currentUser?.displayName ?? auth.currentUser?.email ?? 'Anonymous';
+
+    final List<Map<String, dynamic>> details = [];
+    for (int i = 0; i < questions.length; i++) {
+      int? selectedIndex = selectedAnswers[i];
+      details.add({
+        'question': questions[i].text,
+        'selected': selectedIndex != null ? questions[i].options[selectedIndex] : 'No Answer',
+        'correct': questions[i].options[questions[i].correctIndex],
+        'isCorrect': selectedIndex == questions[i].correctIndex,
+      });
+    }
+
     final result = ResultModel(
       id: '',
       userId: userId,
+      userName: userName,
       quizId: selectedQuizId,
       score: calculateScore(),
       totalQuestions: questions.length,
       percentage: calculatePercentage(),
       date: DateTime.now(),
+      detailedResponses: details,
     );
 
     try {

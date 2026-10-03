@@ -20,26 +20,40 @@ class CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width * 0.35,
+      height: width * 0.35,
       margin: EdgeInsets.only(right: width * 0.04),
-      padding: EdgeInsets.all(width * 0.04),
+      padding: EdgeInsets.all(width * 0.02),
       decoration: BoxDecoration(
-        color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(width * 0.03),
-        border: Border.all(color: AppColors.outlineVariantColor),
+        color: color,
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.7), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(width * 0.05),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: EdgeInsets.all(width * 0.02),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              shape: BoxShape.circle,
+          Icon(icon, color: Colors.white, size: width * 0.12),
+          SizedBox(height: width * 0.03),
+          Text(
+            label, 
+            style: AppTextStyle.label14OnSurface.copyWith(
+              color: Colors.white, 
+              fontWeight: FontWeight.bold
             ),
-            child: Icon(icon, color: AppColors.primaryColor, size: width * 0.07),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: width * 0.04),
-          Text(label, style: AppTextStyle.label14OnSurface),
         ],
       ),
     );

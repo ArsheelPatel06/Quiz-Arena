@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:icons_plus/icons_plus.dart';
+
 import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter/utlis/app_assets%20.dart';
 
@@ -25,10 +25,10 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final AuthService authService = AuthService();
   final TextEditingController nameController = TextEditingController(
-    text: 'ahmed',
+    text: 'arsheel',
   );
   final TextEditingController emailController = TextEditingController(
-    text: 'ahmed@gmail.com',
+    text: 'arsheel@gmail.com',
   );
   final TextEditingController passwordController = TextEditingController(
     text: '123456',
@@ -118,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(height: height * 0.02),
                     CustomTextFormField(labelStyle: AppTextStyle.normal16Black,
                       prefixIcon: Icon(
-                        Clarity.lock_solid,
+                        Icons.lock,
                         color: AppColors.greyColor,
                         size: 24,
                       ),
@@ -128,8 +128,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       obscuringCharacter: '*',
                       suffixIcon: IconButton(
                         icon: showPassword
-                            ? Icon(Clarity.eye_hide_solid)
-                            : Icon(Clarity.eye_show_solid),
+                            ? Icon(Icons.visibility_off)
+                            : Icon(Icons.visibility),
                         onPressed: () {
                           showPassword = !showPassword;
                           setState(() {});
@@ -151,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     CustomTextFormField(labelStyle: AppTextStyle.normal16Black,
                       controller: rePasswordController,
                       prefixIcon: Icon(
-                        Clarity.lock_solid,
+                        Icons.lock,
                         color: AppColors.greyColor,
                         size: 24,
                       ),
@@ -161,8 +161,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       obscuringCharacter: '*',
                       suffixIcon: IconButton(
                         icon: showConfirmPassword ? Icon(
-                          Clarity.eye_hide_solid,) : Icon(
-                          Clarity.eye_show_solid,),
+                          Icons.visibility_off,) : Icon(
+                          Icons.visibility,),
                         onPressed: () {
                           showConfirmPassword = !showConfirmPassword;
                           setState(() {});

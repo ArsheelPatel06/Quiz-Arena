@@ -1,7 +1,7 @@
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
-// import 'package:icons_plus/icons_plus.dart';
+// 
 // import 'package:provider/provider.dart';
 // import 'package:quiz_app_flutter/utlis/app_assets%20.dart';
 // import 'package:quiz_app_flutter/utlis/app_text.dart';
@@ -27,7 +27,7 @@
 //   final AuthService authService = AuthService();
 //   final formKey = GlobalKey<FormState>();
 //   final TextEditingController emailController = TextEditingController(
-//       text: 'ahmed@gmail.com');
+//       text: 'arsheel@gmail.com');
 //   final TextEditingController passwordController = TextEditingController(
 //       text: '123456');
 //
@@ -91,7 +91,7 @@
 //                   SizedBox(height: height * 0.02),
 //                   CustomTextFormField(
 //                     prefixIcon: Icon(
-//                       Clarity.lock_solid,
+//                       Icons.lock,
 //                       color: AppColors.greyColor,
 //                       size: 24,
 //                     ),
@@ -193,7 +193,7 @@
 //                     customInButton: Row(
 //                       mainAxisAlignment: MainAxisAlignment.center,
 //                       children: [
-//                         Brand(Brands.google, size: 26),
+//                         Icon(Icons.g_mobiledata, size: 26),
 //                         SizedBox(width: width * 0.02),
 //                         Text(
 //                           'Login with Google',
@@ -388,7 +388,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:icons_plus/icons_plus.dart';
+
 import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter/utlis/app_assets .dart';
 import 'package:quiz_app_flutter/utlis/app_text.dart';
@@ -414,7 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService authService = AuthService();
   final formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController(
-      text: 'ahmed@gmail.com');
+      text: 'arsheel@gmail.com');
   final TextEditingController passwordController = TextEditingController(
       text: '123456');
 
@@ -469,6 +469,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (text == null || text.trim().isEmpty) {
                         return 'Please enter email';
                       }
+                      if (text == 'admin') return null; // allow admin bypass
                       final bool emailValid = RegExp(
                           r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                           .hasMatch(text);
@@ -481,7 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: height * 0.02),
                   CustomTextFormField(
                     prefixIcon: Icon(
-                      Clarity.lock_solid,
+                      Icons.lock,
                       color: AppColors.greyColor,
                       size: 24,
                     ),
@@ -577,7 +578,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     customInButton: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Brand(Brands.google, size: 26),
+                        Icon(Icons.g_mobiledata, size: 26),
                         SizedBox(width: width * 0.02),
                         Text(
                           'Login with Google',
@@ -599,6 +600,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void login() async {
     if (formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
+
+      var userProvider = Provider.of<MyUsersProvider>(context, listen: false);
+
+      // --- ADMIN BYPASS ---
+      if (emailController.text == 'admin' && passwordController.text == 'admin') {
+        userProvider.setAdmin(true);
+        // Create a dummy admin user model so the rest of the app doesn't crash on null
+        userProvider.updateUsers(MyUsers(id: 'admin', name: 'Admin', email: 'admin'));
+        Navigator.pushReplacementNamed(context, '/admin_dashboard');
+        return;
+      }
+      // ---------------------
 
       try {
         DialogUtlis.loadingDialog(context);
@@ -626,11 +639,8 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         // Save User In Provider
-        var userProvider = Provider.of<MyUsersProvider>(
-          context,
-          listen: false,
-        );
         userProvider.updateUsers(user);
+        userProvider.setAdmin(false);
 
         DialogUtlis.hideDialog(context);
 

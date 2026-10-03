@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:provider/provider.dart';                        // NEW
-import '../../../../providers/auth_provider.dart';             // NEW
-import '../../../../core/services/auth_service.dart';          // NEW
+import 'package:provider/provider.dart';                        
+import '../../../../providers/auth_provider.dart';             
+import '../../../../providers/quiz_provider.dart';             
+import '../../../../core/services/auth_service.dart';          
 import '../../../../utlis/app_colors.dart';
 import '../../../../utlis/app_routes .dart';                   // NEW
 import '../../../../utlis/app_text.dart';
+import '../../../../utlis/dialog_utlis.dart';
 
 // CHANGED: StatelessWidget → StatefulWidget
 // Reason: we need to call logout() which is async
@@ -19,34 +20,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
 
-  // AuthService handles the actual Firebase logout call
-  final AuthService _authService = AuthService();
-
-  void _onLogoutTapped() async {
-    // listen: false — we are calling a method, not reading UI data
-    var authProvider = Provider.of<MyUsersProvider>(context, listen: false);
-
-// Properly sign out from both Firebase and Google
-    await FirebaseAuth.instance.signOut();
-     await GoogleSignIn().disconnect();
-    try {
-      // Step 1: sign out from Firebase
-      await _authService.logout();
-
-      // Step 2: clear the user from the provider
-      authProvider.clearUser();
-
-      // Step 3: go to login screen and remove all previous screens
-      // so the user can't press back and return to the app
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.loginScreen,
-            (route) => false,
-      );
-    } catch (e) {
-      // If logout fails, show a simple message
-      authProvider.setError('Logout failed: $e');
-    }
-  }
+  // Removed unused _onLogoutTapped
 
   @override
   Widget build(BuildContext context) {
@@ -112,14 +86,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: height * 0.02),
                     // Stats kept as-is — needs results history (future feature)
-                    Row(
-                      children: [
-                        StatCard(value: '42', label: 'Quizzes'),
-                        SizedBox(width: width * 0.03),
-                        StatCard(value: '850', label: 'Points'),
-                        SizedBox(width: width * 0.03),
-                        StatCard(value: '92%', label: 'Accuracy'),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final quizProvider = context.watch<QuizProvider>();
+                        final recentResults = quizProvider.recentResults;
+                        
+                        final int totalQuizzes = recentResults.length;
+                        final int totalPoints = recentResults.fold(0, (sum, r) => sum + r.score * 10);
+                        
+                        double avgAccuracy = 0.0;
+                        if (totalQuizzes > 0) {
+                          avgAccuracy = recentResults.fold(0.0, (sum, r) => sum + r.percentage) / totalQuizzes;
+                        }
+
+                        return Row(
+                          children: [
+                            StatCard(value: '$totalQuizzes', label: 'Quizzes'),
+                            SizedBox(width: width * 0.03),
+                            StatCard(value: '$totalPoints', label: 'Points'),
+                            SizedBox(width: width * 0.03),
+                            StatCard(value: '${avgAccuracy.toStringAsFixed(0)}%', label: 'Accuracy'),
+                          ],
+                        );
+                      }
                     ),
                   ],
                 ),
@@ -134,9 +123,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    const ActionTile(icon: Icons.person_outline, label: 'Edit Profile'),
+                    ActionTile(
+                      icon: Icons.person_outline, 
+                      label: 'Edit Profile',
+                      onTap: () {
+                        DialogUtlis.showDialogMessage(
+                          context: context, 
+                          title: 'Edit Profile', 
+                          middleText: 'Profile editing will be available in the next release!', 
+                          buttonText: 'OK'
+                        );
+                      }
+                    ),
                     Divider(height: 1, color: AppColors.outlineVariantColor.withOpacity(0.3), indent: width * 0.04, endIndent: width * 0.04),
-                    const ActionTile(icon: Icons.notifications_none, label: 'Notifications'),
+                    ActionTile(
+                      icon: Icons.notifications_none, 
+                      label: 'Notifications',
+                      onTap: () {
+                        DialogUtlis.showDialogMessage(
+                          context: context, 
+                          title: 'Notifications', 
+                          middleText: 'You have no new notifications.', 
+                          buttonText: 'OK'
+                        );
+                      }
+                    ),
                   ],
                 ),
               ),
@@ -163,27 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: height * 0.04),
-              // CHANGED: added GestureDetector so logout button actually works
-              GestureDetector(
-                onTap: _onLogoutTapped,
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: height * 0.02),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorContainer,
-                    borderRadius: BorderRadius.circular(width * 0.03),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout, color: AppColors.redColor, size: width * 0.05),
-                      SizedBox(width: width * 0.02),
-                      Text('Logout', style: AppTextStyle.bold14Red),
-                    ],
-                  ),
-                ),
-              ),
               SizedBox(height: height * 0.05),
             ],
           ),
@@ -193,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-// StatCard and ActionTile widgets below — no changes needed
+// StatCard and ActionTile widgets below
 class StatCard extends StatelessWidget {
   final String value;
   final String label;
@@ -225,26 +215,30 @@ class StatCard extends StatelessWidget {
 class ActionTile extends StatelessWidget {
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
-  const ActionTile({super.key, required this.icon, required this.label});
+  const ActionTile({super.key, required this.icon, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.sizeOf(context).width;
-    return Padding(
-      padding: EdgeInsets.all(width * 0.04),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
-              SizedBox(width: width * 0.03),
-              Text(label, style: AppTextStyle.bodyLg16OnSurfaceVariant),
-            ],
-          ),
-          Icon(Icons.chevron_right, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
-        ],
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.all(width * 0.04),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
+                SizedBox(width: width * 0.03),
+                Text(label, style: AppTextStyle.bodyLg16OnSurfaceVariant),
+              ],
+            ),
+            Icon(Icons.chevron_right, color: AppColors.onSurfaceVariantColor, size: width * 0.06),
+          ],
+        ),
       ),
     );
   }

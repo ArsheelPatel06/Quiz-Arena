@@ -196,11 +196,49 @@ class FirestoreService {
 
   // ── 5. saveResult ─────────────────────────────────────────
   Future<void> saveResult(ResultModel result) async {
+    // Save to user's results
     await _db
         .collection('users')
         .doc(result.userId)
         .collection('results')
         .add(result.toMap());
+        
+    // Save to shared leaderboard
+    await _db
+        .collection('leaderboards')
+        .doc('tech-trivia')
+        .collection('entries')
+        .add({
+          'userId': result.userId,
+          'name': result.userName,
+          'score': result.score,
+          'total': result.totalQuestions,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+  }
+
+  // ── 5.5 getLeaderboard ────────────────────────────────────
+  Future<List<ResultModel>> getLeaderboard(String quizId) async {
+    final snapshot = await _db
+        .collection('leaderboards')
+        .doc('tech-trivia')
+        .collection('entries')
+        .orderBy('score', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return ResultModel(
+        id: doc.id,
+        userId: data['userId'] ?? '',
+        userName: data['name'] ?? 'Anonymous',
+        quizId: 'tech-trivia',
+        score: data['score'] ?? 0,
+        totalQuestions: data['total'] ?? 0,
+        percentage: ((data['score'] ?? 0) / (data['total'] ?? 1)) * 100,
+        date: (data['timestamp'] as dynamic)?.toDate() ?? DateTime.now(),
+      );
+    }).toList();
   }
 
   // ── 6. getRecentResults ───────────────────────────────────

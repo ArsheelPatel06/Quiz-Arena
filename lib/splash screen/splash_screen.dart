@@ -48,7 +48,7 @@ class SplashScreenBody extends StatelessWidget {
                   const RepaintBoundary(child: SplashLogo()),
                   SizedBox(height: size.height * 0.04),
                   Text(
-                    'QuizMaster',
+                    'QuizArena',
                     style: AppTextStyle.bold57White,
                     textAlign: TextAlign.center,
                   ),

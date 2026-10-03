@@ -24,22 +24,28 @@ class QuizListItem extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(bottom: width * 0.03),
-      padding: EdgeInsets.all(width * 0.04),
+      padding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: width * 0.03),
       decoration: BoxDecoration(
         color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(width * 0.03),
-        border: Border.all(color: AppColors.outlineVariantColor),
+        borderRadius: BorderRadius.circular(width * 0.04),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: width * 0.12,
-            height: width * 0.12,
+            width: width * 0.14,
+            height: width * 0.14,
             decoration: BoxDecoration(
-              color: AppColors.surfaceColor,
-              borderRadius: BorderRadius.circular(width * 0.02),
+              color: icon == Icons.military_tech ? AppColors.goldColor : AppColors.vibrantBlue.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.onSurfaceVariantColor),
+            child: Icon(icon, color: icon == Icons.military_tech ? Colors.white : AppColors.vibrantBlue, size: 28),
           ),
           SizedBox(width: width * 0.04),
           Expanded(

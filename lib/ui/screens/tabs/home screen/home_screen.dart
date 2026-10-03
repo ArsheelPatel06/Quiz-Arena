@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter/ui/screens/tabs/home%20screen/widget/category_card.dart';
 import 'package:quiz_app_flutter/ui/screens/tabs/home%20screen/widget/quiz_list_item.dart';
 import '../../../../providers/quiz_provider.dart';
-import '../../../../providers/auth_provider.dart';   // ← ADD THIS
+import '../../../../providers/auth_provider.dart';
+import '../../../../seed_data.dart';
 import '../../../../utlis/app_colors.dart';
 import '../../../../utlis/app_routes .dart';
 import '../../../../utlis/app_text.dart';
+import '../../../../core/services/firestore_service.dart';
+import '../../../../models/result_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,10 +30,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load categories (already existed)
       quizProvider.loadCategories();
 
-      // Load recent results if user is logged in  ← NEW
+      // Load recent results if user is logged in
       final userId = authProvider.currentUser?.id;
+      final userName = authProvider.currentUser?.name;
       if (userId != null) {
-        quizProvider.loadRecentResults(userId);
+        DatabaseSeeder.seedRecentActivity(userId, userName ?? 'User').then((_) {
+          quizProvider.loadRecentResults(userId);
+        });
       }
     });
   }
@@ -66,12 +72,26 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Recent Quizzes', style: AppTextStyle.title22OnSurface),
-                Text('View All', style: AppTextStyle.label12OnSurfaceVariant.copyWith(color: AppColors.primaryColor)),
+                Text('Top Leads (Leaderboard)', style: AppTextStyle.title22OnSurface),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.leaderboardScreen, arguments: 'tech-trivia');
+                  },
+                  child: Text('View Full', style: AppTextStyle.label12OnSurfaceVariant.copyWith(color: AppColors.primaryColor)),
+                ),
               ],
             ),
             SizedBox(height: height * 0.015),
-            // ── CHANGE: replaced hardcoded items with real results ──
+            // We use the leaderboard UI snippet for home screen
+            _buildTopLeads(context),
+            SizedBox(height: height * 0.03),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Recent Activity', style: AppTextStyle.title22OnSurface),
+              ],
+            ),
+            SizedBox(height: height * 0.015),
             _buildRecentResults(quizProvider),
           ],
         ),
@@ -106,6 +126,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildTopLeads(BuildContext context) {
+    return FutureBuilder<List<ResultModel>>(
+      future: FirestoreService().getLeaderboard('tech-trivia'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Text('Failed to load leaderboard', style: TextStyle(color: Colors.red));
+        }
+        final leads = snapshot.data ?? [];
+        if (leads.isEmpty) {
+          return const Text('No top leads yet. Be the first!', style: TextStyle(color: Colors.grey));
+        }
+
+        // Show top 3
+        final top3 = leads.take(3).toList();
+        return Column(
+          children: top3.asMap().entries.map((entry) {
+            final int index = entry.key;
+            final lead = entry.value;
+            final int score = lead.score;
+            final String name = lead.userName;
+            
+            // Give them a medal based on rank
+            IconData medalIcon = Icons.military_tech;
+            Color medalColor = Colors.grey;
+            if (index == 0) medalColor = Colors.amber;
+            else if (index == 1) medalColor = Colors.grey.shade400;
+            else if (index == 2) medalColor = Colors.brown.shade400;
+
+            return QuizListItem(
+              title: name,
+              subtitle: 'Top Lead',
+              score: '$score pts',
+              date: '#${index + 1}',
+              icon: medalIcon,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
   // Simple helper to format date as "Today", "Yesterday", or a date string
   String _formatDate(DateTime date) {
     final now = DateTime.now();
@@ -128,11 +192,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final colors = [
-      AppColors.primaryColor,
-      AppColors.secondaryContainerColor,
-      AppColors.tertiaryContainerColor,
+      AppColors.vibrantBlue,
+      AppColors.vibrantPink,
+      AppColors.vibrantGreen,
+      AppColors.vibrantOrange,
+      AppColors.vibrantPurple,
     ];
-    final icons = [Icons.calculate, Icons.science, Icons.code, Icons.quiz];
+    final icons = [Icons.science, Icons.calculate, Icons.computer, Icons.sports_esports];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -173,9 +239,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: EdgeInsets.all(width * 0.05),
       decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(width * 0.03),
-        border: Border.all(color: AppColors.outlineVariantColor),
+        gradient: AppColors.lootBoxGradient,
+        borderRadius: BorderRadius.circular(width * 0.04),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
       ),
       child: Row(
         children: [
@@ -183,34 +255,34 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Weekly Progress', style: AppTextStyle.title22OnSurface),
+                Text('LOOT BOX', style: AppTextStyle.headline28OnSurface.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic)),
                 SizedBox(height: height * 0.01),
                 Text(
                   quizProvider.recentResults.isEmpty
-                      ? 'Take a quiz to see your progress!'
-                      : "You're doing great! Keep it up.",
-                  style: AppTextStyle.body14OnSurfaceVariant,
+                      ? 'Complete tasks\nWin Rewards'
+                      : 'Weekly Progress: $displayPercent%\nKeep it up to win!',
+                  style: AppTextStyle.body14OnSurfaceVariant.copyWith(color: Colors.white70),
+                ),
+                SizedBox(height: height * 0.015),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.01),
+                  decoration: BoxDecoration(
+                    color: AppColors.goldColor,
+                    borderRadius: BorderRadius.circular(width * 0.05),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Complete Now ', style: AppTextStyle.label14Primary.copyWith(color: Colors.black, fontWeight: FontWeight.bold)),
+                      const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.black),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: width * 0.18,
-                height: width * 0.18,
-                child: CircularProgressIndicator(
-                  // Use real average, or 0 if no results yet
-                  value: avgPercent / 100,
-                  strokeWidth: width * 0.025,
-                  backgroundColor: AppColors.secondaryContainerColor,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-                ),
-              ),
-              Text('$displayPercent%', style: AppTextStyle.label14Primary),
-            ],
-          ),
+          // A huge trophy or chest icon
+          Icon(Icons.military_tech, size: width * 0.25, color: AppColors.goldColor),
         ],
       ),
     );

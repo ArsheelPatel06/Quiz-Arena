@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
 class AppColors {
   // الألوان الأساسية
@@ -48,4 +48,30 @@ class AppColors {
   static const Color secondaryGradientColor = Color(0x33D0BCFF);
   static const Color inversePrimaryGradientColor = Color(0x1ACFBCFF);
   static const Color trackColor = Color(0x33F2ECF4);
+
+  // Creative Theme Colors
+  static const Color vibrantOrange = Color(0xFFFF6D00);
+  static const Color vibrantPink = Color(0xFFFF4081);
+  static const Color vibrantBlue = Color(0xFF2979FF);
+  static const Color vibrantGreen = Color(0xFF00E676);
+  static const Color vibrantPurple = Color(0xFF651FFF);
+  static const Color goldColor = Color(0xFFFFD700);
+
+  static const LinearGradient premiumGradient = LinearGradient(
+    colors: [Color(0xFF4A00E0), Color(0xFF8E2DE2)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient greenGradient = LinearGradient(
+    colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient lootBoxGradient = LinearGradient(
+    colors: [Color(0xFF3A1C71), Color(0xFFD76D77), Color(0xFFFFAF7B)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

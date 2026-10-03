@@ -7,7 +7,7 @@ import '../../../../providers/auth_provider.dart';                   // NEW
 import '../../../../utlis/app_colors.dart';
 import '../../../../utlis/app_text.dart';
 import '../../../../utlis/app_routes .dart';                         // NEW
-
+import '../../leaderboard_screen.dart';
 // CHANGED: StatelessWidget → StatefulWidget
 // Reason: we need initState() to save the result to Firestore when screen opens
 class QuizResultScreen extends StatefulWidget {
@@ -65,8 +65,9 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
             horizontal: width * 0.04,
             vertical: height * 0.03,
           ),
-          child: Column(
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(vertical: height * 0.04),
@@ -165,14 +166,19 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                 ],
               ),
               const Spacer(),
-              // Review Answers — no logic yet, kept as-is
               ActionButton(
-                text: 'Review Answers',
-                icon: Icons.fact_check_outlined,
+                text: 'View Leaderboard',
+                icon: Icons.leaderboard,
                 backgroundColor: AppColors.primaryColor,
                 textStyle: AppTextStyle.medium14White,
                 iconColor: AppColors.whiteColor,
-                onTap: () {},                                        // NEW param
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => LeaderboardScreen(quizId: quizProvider.selectedQuizId),
+                    ),
+                  );
+                },
               ),
               SizedBox(height: height * 0.015),
               // CHANGED: Retry resets quiz and goes back to quiz screen
@@ -204,6 +210,7 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                 },
               ),
             ],
+          ),
           ),
         ),
       ),
